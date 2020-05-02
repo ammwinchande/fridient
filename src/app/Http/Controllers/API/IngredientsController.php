@@ -89,6 +89,17 @@ class IngredientsController extends Controller
     }
 
     /**
+     * Display weekly ingredients based on recipes ingredients
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function weeklyOrder()
+    {
+        return 'Working on it';
+    }
+
+
+    /**
      * Validate ingredient resource
      *
      * @return array $validatedAttributes
