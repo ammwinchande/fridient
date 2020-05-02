@@ -2,9 +2,14 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Box;
 use App\Http\Controllers\Controller;
 use App\Ingredient;
+use App\Recipe;
 use App\Supplier;
+use DateInterval;
+use DateTime;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 
 class IngredientsController extends Controller
@@ -99,10 +104,110 @@ class IngredientsController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function weeklyOrder()
+    public function weeklyOrder(Request $request)
     {
-        // get all boxes
-        return 'Working on it';
+        $ingredient_orders = [];
+
+        if ($request->has('order_date') && !empty($request->order_date)) {
+            $end_order_date = new DateTime($request->order_date);
+            $end_order_date->add(new DateInterval('P7D'));
+
+            $boxes = Box::whereBetween('delivery_date', [$request->order_date, $end_order_date])->get();
+
+            $ingredients_summary = $this->ingredientsOccurrences($this->recipesOccurrences($boxes));
+
+            foreach ($ingredients_summary as $key => $value) {
+                $tmp_ingredient = [
+                    "ingredient" => Ingredient::firstWhere('id', $key),
+                    "amount" => $value
+                ];
+                array_push($ingredient_orders, $tmp_ingredient);
+            }
+
+            return response()->json([
+                'order_date' => $request->order_date,
+                'ingredients' => $ingredient_orders
+            ]);
+        }
+
+        $boxes = Box::all();
+
+        $ingredients_summary = $this->ingredientsOccurrences($this->recipesOccurrences($boxes));
+
+        foreach ($ingredients_summary as $key => $value) {
+            $tmp_ingredient = [
+                "ingredient" => Ingredient::firstWhere('id', $key),
+                "amount" => $value
+            ];
+            array_push($ingredient_orders, $tmp_ingredient);
+        }
+
+        return response()->json([
+            'order_date' => $request->order_date,
+            'ingredients' => $ingredient_orders
+        ]);
+    }
+
+    /**
+     * Manipulate recipe_ids, and their occurrences
+     *
+     * @param \Illuminate\Database\Eloquent\Collection $boxes
+     * @return Array $recipes
+     */
+    public function recipesOccurrences(Collection $boxes)
+    {
+        /**
+         * Expected: $recipes = [recipe_id => occurrence]
+         */
+        $recipes = [];
+        foreach ($boxes as $box) {
+            foreach ($box->recipe_ids as $recipe_id) {
+                if (array_key_exists(
+                    $recipe_id,
+                    $recipes
+                )) {
+                    $recipes[$recipe_id] += 1;
+                } else {
+                    $recipes[$recipe_id] = 1;
+                }
+            }
+        }
+        return $recipes;
+    }
+
+    /**
+     * Manipulate recipes to get ingredients, and total amount for each
+     *
+     * @param Array $recipes_summary
+     * @return Array $ingredients_summary
+     */
+    public function ingredientsOccurrences($recipes_summary)
+    {
+        /**
+         * Expected: $ingredients_summary = [ingredient_id => total_amount]
+         */
+        $ingredients_summary = [];
+
+        foreach ($recipes_summary as $key => $value) {
+            // using $key fetch ingredients from recipes
+            // using $value calculate total amount
+            // return json_decode($recipe->ingredients[0])->amount;
+            $ingredients = Recipe::firstWhere('id', $key)->ingredients;
+            foreach ($ingredients as $ingredient) {
+                $ingredient_id = json_decode($ingredient)->ingredient_id;
+                $amount = json_decode($ingredient)->amount;
+                if (array_key_exists(
+                    $ingredient_id,
+                    $ingredients_summary
+                )) {
+                    $ingredients_summary[$ingredient_id] += ($amount * $value);
+                } else {
+                    $ingredients_summary[$ingredient_id] = $amount * $value;
+                }
+            }
+        }
+
+        return $ingredients_summary;
     }
 
 

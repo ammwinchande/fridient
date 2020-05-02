@@ -23,7 +23,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::group(['prefix' => 'v1'], function () {
     Route::resource('suppliers', 'API\SuppliersController');
     Route::resource('ingredients', 'API\IngredientsController');
-    Route::get('weekly-ingredients', 'API\IngredientsController@weeklyOrder');
+    Route::get('ingredients-orders', 'API\IngredientsController@weeklyOrder');
     Route::resource('recipes', 'API\RecipesController');
     Route::resource('boxes', 'API\BoxesController');
 });
