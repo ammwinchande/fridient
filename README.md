@@ -1,36 +1,64 @@
-# docker-compose-laravel
-A pretty simplified docker-compose workflow that sets up a LEMP network of containers for local Laravel development. You can view the full article that inspired this repo [here](https://medium.com/@aschmelyun).
+# Fridient
 
+A fresh Ingridients API
 
 ## Usage
 
 To get started, make sure you have [Docker installed](https://docs.docker.com/docker-for-mac/install/) on your system, and then clone this repository.
 
-First add your entire Laravel project to the `src` folder, then open a terminal and from this cloned respository's root run `docker-compose up -d --build`. Open up your browser of choice to [http://localhost:8080](http://localhost:8080) and you should see your Laravel app running as intended. **Your Laravel app needs to be in the src directory first before bringing the containers up, otherwise the artisan container will not build, as it's missing the appropriate file.** 
+1. First, open a terminal and from this cloned respository's root run `docker-compose up -d --build`.
+Open up your browser of choice to [http://localhost:8080](http://localhost:8080) and you should see your Laravel app running as intended.
+   - `docker-compose run --rm composer update`
+   - `docker-compose run --rm artisan migrate --seed`
 
-**New:** Three new containers have been added that handle Composer, NPM, and Artisan commands without having to have these platforms installed on your local computer. Use the following command templates from your project root, modifiying them to fit your particular use case:
 
-- `docker-compose run --rm composer update`
-- `docker-compose run --rm npm run dev`
-- `docker-compose run --rm artisan migrate` 
+## View End points\
 
-Containers created and their ports (if used) are as follows:
+The following are the application end-points
 
-- **nginx** - `:8080`
-- **mysql** - `:3306`
-- **php** - `:9000`
-- **npm**
-- **composer**
-- **artisan**
+1. One endpoint to create an ingredient\
+    To create an ingredient you must supply `name`, `measure`, `supplier`.\
+    The API responds with an object of the ingredient\
+    The measure is a unit of measure such as `g, kg, pieces`. Depending on whether it is 200grams of sugar or perhaps 8 potatoes.
 
-## Persistent MySQL Storage
+    - Send POST request to URL below
+    [http://localhost:8080/api/v1/ingredients](http://localhost:8080/api/v1/ingredients)
 
-By default, whenever you bring down the docker-compose network, your MySQL data will be removed after the containers are destroyed. If you would like to have persistent data that remains after bringing containers down and back up, do the following:
+2. One endpoint to list ingredients\
+    This should list all ingredients and should be paginated.
 
-1. Create a `mysql` folder in the project root, alongside the `nginx` and `src` folders.
-2. Under the mysql service in your `docker-compose.yml` file, add the following lines:
+    - Send GET request to URL below
+    [http://localhost:8080/api/v1/ingredients](http://localhost:8080/api/v1/ingredients)
 
-```
-volumes:
-  - ./mysql:/var/lib/mysql
-```
+    - Send GET request to URL below, to filter ingredients by supplier
+    [http://localhost:8080/api/v1/ingredients/?supplier_code=code](http://localhost:8080/api/v1/ingredients/?supplier_code=code)
+
+3. One endpoint to create a recipe\
+    To create a recipe you must supply `name`, `description` and `an array of ingredients` and the `amount` of the ingredient required\
+    The `description` is a free text field to describe the recipe steps.\
+    The ingredients array includes an `amount` of each `ingredient` required and maps back to the `measure` required for that ingredient from the ingredients endpoint.
+
+    - Send POST request to URL below
+    [http://localhost:8080/api/v1/recipes](http://localhost:8080/api/v1/recipes)
+
+4. One endpoint to list recipes\
+    This should list all recipes and should be paginated\
+
+    - Send GET request to URL below
+    [http://localhost:8080/api/v1/recipes](http://localhost:8080/api/v1/recipes)
+
+5. One endpoint to create a box for a user\
+    A box is an order from a customer which includes up to 4 recipes\
+    To create a box you must supply a `delivery_date` which is any date in the future along with an `array of recipe IDs (up to 4)` that the user would like to receive.\
+    The endpoint should return `failures for invalid recipe IDs` or `delivery_dates` in the past or within the next 48 hours.\
+    The API should respond with an object of the box.\
+
+    - Send POST request to URL below - to create a Box
+    [http://localhost:8080/api/v1/boxes](http://localhost:8080/api/v1/boxes)
+
+    - Send GET request to URL below - get all Boxes
+    [http://localhost:8080/api/v1/boxes](http://localhost:8080/api/v1/boxes)
+
+6. One endpoint to view the ingredients required to be ordered by the company\
+    Upon supplying an `order_date` the API must response with the ingredients and amount of each ingredient which should be ordered to fulfill all orders for the 7 days from the `order_date`.
+
