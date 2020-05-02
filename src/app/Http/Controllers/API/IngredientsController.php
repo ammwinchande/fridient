@@ -14,8 +14,14 @@ class IngredientsController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
+        if ($request->has('supplier_code')) {
+            $supplier = Supplier::firstWhere('code', strtolower($request->supplier_code));
+            if ($supplier) {
+                return response()->json(Ingredient::where('supplier_id', $supplier->id)->paginate(5));
+            }
+        }
         return response()->json(Ingredient::paginate(5), 200);
     }
 
@@ -95,6 +101,7 @@ class IngredientsController extends Controller
      */
     public function weeklyOrder()
     {
+        // get all boxes
         return 'Working on it';
     }
 
