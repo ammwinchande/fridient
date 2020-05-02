@@ -7,9 +7,9 @@ use Faker\Generator as Faker;
 
 $factory->define(Recipe::class, function (Faker $faker) {
     $data = [
-        json_encode(["ingredient_id" => $faker->randomNumber(), "amount" => $faker->randomNumber()]),
-        json_encode(["ingredient_id" => $faker->randomNumber(), "amount" => $faker->randomNumber()]),
-        json_encode(["ingredient_id" => $faker->randomNumber(), "amount" => $faker->randomNumber()])
+        json_encode(["ingredient_id" => $faker->randomDigit, "amount" => $faker->randomDigit]),
+        json_encode(["ingredient_id" => $faker->randomDigit, "amount" => $faker->randomDigit]),
+        json_encode(["ingredient_id" => $faker->randomDigit, "amount" => $faker->randomDigit])
     ];
 
     return [
