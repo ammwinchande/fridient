@@ -73,4 +73,7 @@ The following are the application end-points
     [http://localhost:8080/api/v1/ingredients-orders/?order_date=**2020-05-02**](http://localhost:8080/api/v1/ingredients-orders/?order_date=**2020-05-02**)
 
 **NOTE:**
+
 Order date should be in format of: `YYYY-mm-dd` e.g. 2020-05-02
+
+For better experience creating and testing use: `POSTMAN`
